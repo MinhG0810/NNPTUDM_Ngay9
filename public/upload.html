@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Upload Excel - Import Users</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 500px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background-color: #f9f9f9; }
+        input[type="file"] { margin: 15px 0; }
+        button { padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #result { margin-top: 20px; padding: 10px; border: 1px solid #ddd; background: #fff; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Nhập dữ liệu 99 User từ file Excel</h2>
+        <form id="uploadForm">
+            <label>Chọn file danh_sach_99_user.xlsx:</label><br>
+            <input type="file" id="fileInput" name="file" accept=".xlsx" required />
+            <br>
+            <button type="submit">Upload & Send Emails</button>
+        </form>
+        <div id="result">
+            <em>Kết quả server sẽ hiển thị ở đây... Việc chạy 99 mail sẽ mất vài chục giây nhé! Đoạn này chịu khó đợi.</em>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const resultDiv = document.getElementById('result');
+            
+            if (!fileInput.files[0]) {
+                alert("Bạn chưa chọn file Excel!");
+                return; 
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            resultDiv.innerHTML = "<em>Đang Upload & xử lý gửi mail (Đợi chút nhé vì 99 email)... ⏳</em>";
+
+            try {
+                const response = await fetch('/users/import', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<span style="color: green;">✔ Thành công!</span><br><br><b>Message:</b> ${data.message}<br><br><b>Đã Import:</b> ${data.imported ? data.imported.join(', ') : 'OK'}`;
+                } else {
+                    resultDiv.innerHTML = `<span style="color: red;">✖ Lỗi server:</span> ${data.message}`;
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<span style="color: red;">✖ Lỗi kết nối:</span> ${err.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
